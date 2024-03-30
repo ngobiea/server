@@ -4,6 +4,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
+import SequelizeDB from './db/SequelizeDB';
 import CustomError from './utils/CustomError';
 import type { Request, Response } from 'express';
 import { statusCode } from './utils/statusCode';
@@ -17,8 +18,8 @@ app.use(cors());
 app.use(helmet());
 
 app.get('/', (_req, res) => {
-  res.status(statusCode.OK).send('Hello, world!');
-    // res.status(statusCode.OK).json({ message: 'Hello, world!' });
+  // res.status(statusCode.OK).send('Hello, world!');
+  res.status(statusCode.OK).json('Hello, world!');
 });
 app.use((error: CustomError, _req: Request, res: Response) => {
   console.log(error.stack);
@@ -35,6 +36,14 @@ app.use((error: CustomError, _req: Request, res: Response) => {
 
   res.status(status).json(errorResponse);
 });
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+
+SequelizeDB.authenticate()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+    SequelizeDB.sync({ force: true });
+  })
+  .catch((error) => {
+    console.error('Unable to connect to the database:', error);
+  });
