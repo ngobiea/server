@@ -1,0 +1,19 @@
+
+.env
+.vscode
+/node_modules
+/dist
+
+# production
+/build
+
+package-lock.json
+
+
+test/
+text.txt
+
+certificates
+data.js
+
+
