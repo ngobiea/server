@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import CustomError from './utils/CustomError';
 import type { Request, Response } from 'express';
 import { statusCode } from './utils/statusCode';
+import type { ValidationError } from 'express-validator';
 const { PORT } = process.env;
 const app = express();
 
@@ -21,12 +22,19 @@ app.get('/', (_req, res) => {
 });
 app.use((error: CustomError, _req: Request, res: Response) => {
   console.log(error.stack);
+  const errorResponse: {
+    message: string;
+    validationErrors?: ValidationError[];
+  } = {
+    message: error.message,
+  };
   const status = error.statusCode || statusCode.INTERNAL_SERVER_ERROR;
-  const { message } = error;
-  const validationErrors = error.validationErrors;
-  res.status(status).json({ message, validationErrors });
-});
+  if (error.validationErrors) {
+    errorResponse.validationErrors = error.validationErrors;
+  }
 
+  res.status(status).json(errorResponse);
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
